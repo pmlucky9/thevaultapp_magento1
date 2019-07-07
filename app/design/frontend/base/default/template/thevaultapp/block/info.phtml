@@ -1,0 +1,7 @@
+<?php
+	// get phone address
+    $billing = Mage::getSingleton('checkout/session')->getQuote()->getBillingAddress();      
+    $phoneNumber = $billing->getData('telephone');
+?>
+<h4><?php echo $this->__('TheVaultApp') ?></h4>
+<p> <b>Phone Number:</b> <?php echo $phoneNumber;?></p>

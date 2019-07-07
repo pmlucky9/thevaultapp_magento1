@@ -1,0 +1,333 @@
+<?php
+    //get payment code
+    $session  = Mage::getSingleton('checkout/session');
+    $quote_id = $session->getQuoteId();
+    $quote = Mage::getModel('sales/quote')->load($quote_id );
+    $paymentcode = $quote->getPayment()->getMethodInstance()->getCode(); 
+
+    //get configration value for vaultapp
+    //Mage::app()->getStore()->getStoreId();
+    $isActive = Mage::getStoreConfig('payment/thevaultapp/active');
+
+    if ($isActive)
+    {
+        $storeName = Mage::getStoreConfig('payment/thevaultapp/store_name');
+        $businessName = Mage::getStoreConfig('payment/thevaultapp/business_name');
+        $apiUrl = Mage::getStoreConfig('payment/thevaultapp/api_url');
+        $apiKey = Mage::getStoreConfig('payment/thevaultapp/api_key');
+    }
+
+?>
+
+<style type="text/css">
+    .modal-wrapper {
+        position: fixed;
+        z-index: 9999;
+        top: 6em;
+        left: 50%;
+        width: 600px;
+        margin-left: -300px;
+        background-color: #fff;
+        box-shadow: 0 0 1.5em hsla(0, 0%, 0%, 0.35);
+    }
+   
+    .modal.is-visible .modal-transition {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .modal-header {
+        padding: 1em;
+    }
+    .modal-content {
+        padding: 0 30px 20px 30px;
+    }
+
+    .modal-header {
+        position: relative;
+        background-color: #fff;
+        /*box-shadow: 0 1px 2px hsla(0, 0%, 0%, 0.06);
+        border-bottom: 1px solid #e8e8e8;*/
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 1em;
+        color: #aaa;
+        background: none;
+        border: 0;
+    }
+
+    .modal-close:hover {
+        color: #777;
+    }
+
+    .modal-heading {
+        font-size: 1.125em;
+        margin: 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    .modal-content > *:first-child {
+        margin-top: 0;
+    }
+
+    .modal-content > *:last-child {
+        margin-bottom: 0;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #c1c1c1;
+        text-align: right;
+        margin-top: auto;
+        padding: 25px 30px;
+    }
+
+    .modal-footer .modal-toggle {
+        width: 100px;
+        height: 30px;
+        text-transform: uppercase;
+    }
+
+    @media only screen and (max-width: 767px) {
+        .modal-wrapper {
+            width: 90%;
+            margin-left: -45%;
+        }
+    }
+</style>
+
+<div id="thevaultapp_alert" class="modal-wrapper modal-transition" style="display:none;">
+    <div class="modal-header">
+        <button class="modal-close modal-toggle">X<use xlink:href="#icon-close"></use></svg></button>
+        <h2 class="modal-heading"></h2>
+    </div>
+    <div class="modal-body">
+        <div class="modal-content">
+            <div id="thevaultapp_alert" style="display: block;">
+                <div style="font-size:30px" title="header"></div>
+                <div style="font-size:18px;margin-bottom:20px;" title="description">                    
+                </div>
+                <div style="font-size:15px">
+                    <div>
+                        <span>Phone</span>&nbsp;:&nbsp;&nbsp;
+                        <span title="phone"></span>
+                    </div>
+                    <div>
+                        <span>Amount</span>&nbsp;:&nbsp;&nbsp;
+                        <span title="amount"></span>
+                    </div>
+                    <div>
+                        <span>Order ID</span>&nbsp;:&nbsp;&nbsp;
+                        <span title="order_id"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-toggle">Ok</button>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var Dialog = {};
+    Dialog.Box = Class.create();
+    Object.extend(Dialog.Box.prototype, {
+        initialize: function(id) {
+            this.createOverlay();
+            this.dialog_box = $(id);
+            this.dialog_box.show = this.show.bind(this);
+            this.dialog_box.hide = this.hide.bind(this);
+            this.parent_element = this.dialog_box.parentNode;
+            var e_dims = Element.getDimensions(this.dialog_box);
+            var b_dims = Element.getDimensions(this.overlay);
+            /*this.dialog_box.style.left = ((b_dims.width/2) - (e_dims.width/2)) + 'px';
+            this.dialog_box.style.top = '12px';*/
+        },
+        createOverlay: function() {
+            if($('dialog_overlay')) {
+            this.overlay = $('dialog_overlay');
+            } else {
+            this.overlay = document.createElement('div');
+            this.overlay.id = 'dialog_overlay';
+            Object.extend(this.overlay.style, {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                zIndex: 90,
+                width: '100%',
+                backgroundColor: '#000',
+                display: 'none'
+            });
+            document.body.insertBefore(this.overlay, document.body.childNodes[0]);
+            }
+        },
+        moveDialogBox: function(where) {
+            Element.remove(this.dialog_box);
+            if(where == 'back')
+            this.dialog_box = this.parent_element.appendChild(this.dialog_box);
+            else
+            this.dialog_box = this.overlay.parentNode.insertBefore(this.dialog_box, this.overlay);
+        },
+        show: function() {
+            this.overlay.style.height = $$('body')[0].getHeight()+'px';
+            this.moveDialogBox('out');
+            this.overlay.onclick = this.hide.bind(this);
+            var parent = this;
+            this.dialog_box.select('[class="modal-toggle"]').each(function(ele){
+                ele.onclick = parent.hide.bind(parent);
+            });
+            this.selectBoxes('hide');
+            new Effect.Appear(this.overlay, {duration: 0.1, from: 0.0, to: 0.3});
+            this.dialog_box.style.display = ''
+        },
+        hide: function() {
+            this.selectBoxes('show');
+            new Effect.Fade(this.overlay, {duration: 0.1});
+            this.dialog_box.style.display = 'none';
+            this.moveDialogBox('back');
+            $A(this.dialog_box.getElementsByTagName('input')).each(function(e){if(e.type!='submit')e.value=''});
+        },
+        selectBoxes: function(what) {
+            $A(document.getElementsByTagName('select')).each(function(select) {
+            Element[what](select);
+            });
+            if(what == 'hide')
+            $A(this.dialog_box.getElementsByTagName('select')).each(function(select){Element.show(select)})
+        }
+    });
+
+    function showModal(header, description, amount, phone, order_id) {
+        $("thevaultapp_alert").select('[title="header"]')[0].update(header);
+        $("thevaultapp_alert").select('[title="description"]')[0].update(description);
+        $("thevaultapp_alert").select('[title="phone"]')[0].update(amount);
+        $("thevaultapp_alert").select('[title="amount"]')[0].update(phone);
+        $("thevaultapp_alert").select('[title="order_id"]')[0].update(order_id);
+        $("thevaultapp_alert").show();               
+    }
+
+    var paymentcode = '<?php echo $paymentcode?>';
+    var orderData = undefined;
+    var timer = undefined;
+        
+    function fetchVaultPaymentStatus(data) {            
+        orderData = data;        
+        new Ajax.Request(                
+            '<?php echo Mage::getUrl('thevaultapp/payment/checkorderstatus') ?>',
+            {
+                method:'post',
+                parameters: {orderId: orderData.data.subid1 },
+                onSuccess: function(data) {
+                    res = data.responseJSON;
+                    if (res.data === 'complete') {
+                        showModal('Congratulations!',
+                                'Your order is completed.<br>View your payment from within The Vault App.',
+                                orderData.data.amount,
+                                orderData.data.phone,
+                                orderData.data.subid1
+                        );                        
+                        timer = undefined;
+                        return;
+                    } else if (res.data === 'canceled') {
+                        showModal('Your order was cancelled!',
+                                '',
+                                orderData.data.amount,
+                                orderData.data.phone,
+                                orderData.data.subid1
+                        );
+                        timer = undefined;
+                        return;
+                    }                          
+                    timer = setTimeout(fetchVaultPaymentStatus(orderData).bind(this), 1000);
+                },
+                onFailure: function(error) {
+                    timer = undefined;
+                    alert(error.message || error);                    
+                }
+        });
+    }
+    
+    if ( paymentcode == 'thevaultapp' ) {
+        Review.prototype.onVaultRequestSuccess = function(data) { 
+            //create popup dialog box;
+            res = data.responseJSON;
+            if(res.status=="ok"){
+                // show alert Display
+                new Dialog.Box("thevaultapp_alert");                
+                showModal('Almost Complete!',
+                        'A payment request has been sent to your phone.<br>In order to complete this checkout press "Accept" from with the app.',
+                        res.data.amount,
+                        res.data.phone,
+                        res.data.subid1
+                );
+                timer = setTimeout(fetchVaultPaymentStatus(res), 0);
+                //pollingVaultPaymentStatus(res).bind(this);
+            } else {
+                self.paymentInfo = undefined;
+                if (res.message) {
+                    alert(res.message);
+                } else {
+                    alert(res.errors[0]);
+                }                
+            }
+        };
+
+        Review.prototype.onOrderSave = function(data) {                         
+            params = {};         
+            new Ajax.Request(
+                '<?php echo Mage::getUrl('thevaultapp/payment/vaultrequestorder') ?>',
+                {
+                    method:'post',
+                    parameters:params,                    
+                    onSuccess: this.onVaultRequestSuccess,
+                    onFailure: checkout.ajaxFailure.bind(checkout)
+                }
+            );
+        };
+
+        Review.prototype.save = Review.prototype.save.wrap(function(orig) {                
+            if (checkout.loadWaiting!=false) return;
+            checkout.setLoadWaiting('review');            
+            var params = Form.serialize(payment.form);
+            if (this.agreementsForm) {
+                params += '&'+Form.serialize(this.agreementsForm);
+            }
+            params.save = true;            
+            new Ajax.Request(
+                this.saveUrl,
+                {
+                    method:'post',
+                    parameters:params,
+                    //onComplete: this.onOrderComplete,
+                    onSuccess: this.onOrderSave.bind(this),
+                    onFailure: checkout.ajaxFailure.bind(checkout)
+                }
+            ); 
+        });
+        
+    } else {
+        Review.prototype.save = Review.prototype.save.wrap(function(orig) {                
+            if (checkout.loadWaiting!=false) return;
+            checkout.setLoadWaiting('review');
+            var params = Form.serialize(payment.form);
+            if (this.agreementsForm) {
+                params += '&'+Form.serialize(this.agreementsForm);
+            }
+            params.save = true;
+            new Ajax.Request(
+                this.saveUrl,
+                {
+                    method:'post',
+                    parameters:params,
+                    onComplete: this.onComplete,
+                    onSuccess: this.onSave,
+                    onFailure: checkout.ajaxFailure.bind(checkout)
+                }
+            );        
+        });
+    }
+</script>

@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<config>    
+  <sections>
+    <payment>
+      <groups>
+        <thevaultapp translate="label comment" module="thevaultapp">
+          <label>Checkout with vault</label>
+          <comment>
+              <![CDATA[              
+              <strong>Copyright © 2019 <a href="http://www.thevaultapp.com" target="_blank">www.thevaultapp.com</a> / <a href="mailto:support@thevaultapp.com">support@thevaultapp.com</a></strong><br />
+              Thanks for choosing Vault Extensions.<br/>              
+            ]]>
+          </comment>
+          <sort_order>1000</sort_order>
+          <show_in_default>1</show_in_default>
+          <show_in_website>1</show_in_website>
+          <show_in_store>0</show_in_store>          
+          
+          <fields>  
+            <basic_settings type="group" translate="label comment">
+              <label>Basic Settings</label>              
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>            
+              <sort_order>1</sort_order>
+              <expanded>1</expanded>
+              <fields>
+                <active translate="label">
+                  <label>Enabled</label>
+                  <frontend_type>select</frontend_type>
+                  <source_model>adminhtml/system_config_source_yesno</source_model>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <config_path>payment/thevaultapp/active</config_path>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>0</sort_order>
+                </active>
+                <environment translate="label">
+                  <label>Environment</label>
+                  <frontend_type>select</frontend_type>
+                  <source_model>thevaultapp/adminhtml_config_environment</source_model>
+                  <config_path>payment/thevaultapp/environment</config_path>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>2</sort_order>
+                </environment>
+                <title translate="label comment">
+                  <label>Title</label>
+                  <comment>Payment method title displayed to shoppers.</comment>
+                  <config_path>payment/thevaultapp/title</config_path>
+                  <frontend_type>text</frontend_type>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>2</sort_order>
+                </title>
+              </fields>
+            </basic_settings>
+
+            <advanced_settings type="group" translate="label comment">
+              <label>Advanced Settings</label>            
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>            
+              <sort_order>10</sort_order>
+              <expanded>1</expanded>
+              <fields>
+                <debug translate="label">
+                  <label>Debug</label>
+                  <config_path>payment/thevaultapp/debug</config_path>
+                  <frontend_type>select</frontend_type>
+                  <source_model>adminhtml/system_config_source_yesno</source_model>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>3</sort_order>
+                </debug>
+                <vault_enabled translate="label">
+                  <label>Vault Enabled</label>
+                  <config_path>payment/thevaultapp/vault_enabled</config_path>
+                  <frontend_type>select</frontend_type>
+                  <source_model>adminhtml/system_config_source_yesno</source_model>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>4</sort_order>
+                </vault_enabled>
+                <vault_title translate="label">
+                  <label>Vault Title</label>
+                  <config_path>payment/thevaultapp/vault_title</config_path>         
+                  <frontend_type>text</frontend_type>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>5</sort_order>
+                  <depends><vault_enabled>1</vault_enabled></depends>
+                </vault_title>
+              </fields>
+            </advanced_settings>
+    
+            <account_keys type="group" translate="label comment">
+              <label>Account Keys</label>            
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>            
+              <sort_order>10</sort_order>
+              <expanded>1</expanded>
+              <fields>            
+                <store_name translate="label comment">              
+                  <label>Store</label>
+                  <config_path>payment/thevaultapp/store_name</config_path>
+                  <frontend_type>text</frontend_type>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>6</sort_order>
+                </store_name>                
+                <api_url translate="label">
+                  <label>Api Url</label>
+                  <config_path>payment/thevaultapp/api_url</config_path>
+                  <frontend_type>text</frontend_type>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>8</sort_order>
+                </api_url>
+                <api_key translate="label">
+                  <label>Api Key</label>
+                  <config_path>payment/thevaultapp/api_key</config_path>
+                  <frontend_type>text</frontend_type>                  
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>8</sort_order>
+                </api_key>
+              </fields>
+            </account_keys>
+
+            <callback_urls type="group" translate="label comment">
+              <label>Callback Urls</label>            
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>            
+              <sort_order>10</sort_order>
+              <expanded>1</expanded>
+              <fields>
+                <callback_url translate="label">                  
+                  <label>Verify Callback</label>
+                  <config_path>payment/thevaultapp/callback_url</config_path>
+                  <frontend_type>text</frontend_type>
+                  <frontend_model>thevaultapp/adminhtml_system_config_field_redirecturl</frontend_model>
+                  <show_in_default>1</show_in_default>
+                  <show_in_website>1</show_in_website>
+                  <show_in_store>0</show_in_store>
+                  <sort_order>8</sort_order>
+                </callback_url>
+              </fields>
+            </callback_urls>
+
+          </fields>
+
+        </thevaultapp>
+      </groups>
+    </payment>
+  </sections>
+</config>
